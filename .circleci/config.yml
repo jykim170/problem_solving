@@ -1,46 +1,32 @@
 version: 2.1
 
-# (1) orbs가 mirror.yml에 있으면 여기로 합치기
-orbs:
-  # 예) gh: circleci/github-cli@2.2.0
-
-# (2) executors/commands가 mirror.yml에 있으면 여기로 합치기
-executors:
-  # ...
-
-commands:
-  # ...
-
 jobs:
-  # (3) 기존 config.yml의 jobs 그대로
-  build:
+  say-hello:
     docker:
-      - image: cimg/base:stable
+      - image: cimg/base:current
     steps:
       - checkout
-      - run: echo "build..."
+      - run:
+          name: "Say hello"
+          command: "echo Hello, World!"
 
-  # (4) mirror.yml의 job(예: mirror)을 여기로 복사
   mirror:
     docker:
       - image: cimg/base:stable
     steps:
       - checkout
-      - run: echo "mirror..."
-      # - run: ./mirror.sh  같은 실제 미러링 스텝
+      - run:
+          name: Push to organization repo
+          command: |
+            git config --global user.name jykim170
+            git config --global user.email vertoco@naver.com
+            git remote add org https://x-access-token:${ORG_PUSH_PAT}@github.com/SSAFY-15/SW_study_KJY.git
+            git push org main --force
 
 workflows:
-  version: 2
-
-  on_push:
+  say-hello-and-mirror:
     jobs:
-      - build
-
-      # (5) mirror job을 같은 workflow에 추가
+      - say-hello
       - mirror:
           requires:
-            - build
-          # 필요하면 브랜치 제한
-          # filters:
-          #   branches:
-          #     only: main
+            - say-hello
